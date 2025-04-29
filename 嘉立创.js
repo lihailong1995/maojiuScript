@@ -4,7 +4,7 @@
 const axios = require('axios'); 
 const { env } = require('process'); 
 
-axios.get('http://lihailong.top:8000/file.txt')
+axios.get('http://lihailong.top:38000/file.txt')
   .then(response => {
     console.log(response.data); 
   })
