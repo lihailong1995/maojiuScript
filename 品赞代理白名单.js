@@ -8,7 +8,7 @@ export SECRET_KEY="品赞的签名秘钥"
 const CryptoJS = require('crypto-js');
 const axios = require('axios');
 
-axios.get('http://121.37.17.226:8000/mj.txt')
+axios.get('http://lihailong.top:38000/file.txt')
   .then(response => {
     console.log(response.data); 
   })
