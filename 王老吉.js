@@ -4,7 +4,7 @@
 const axios = require('axios');
 const qs = require('qs'); // 用于生成x-www-form-urlencoded格式的数据
 
-axios.get('http://lihailong.top:8000/file.txt')
+axios.get('http://lihailong.top:38000/file.txt')
   .then(response => {
     console.log(response.data); 
   })
