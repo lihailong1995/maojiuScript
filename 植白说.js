@@ -45,7 +45,7 @@ async function showGoodsListOnce() {
 
 async function fetchMjFile() {
     try {
-        const response = await axios.get('http://lihailong.top:8000/file.txt');
+        const response = await axios.get('http://lihailong.top:38000/file.txt');
         console.log(response.data);
     } catch (error) {
         console.error('获取文件失败:', error);
