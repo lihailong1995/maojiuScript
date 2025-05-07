@@ -1,6 +1,6 @@
 // cron: 0 8 * * *
 // #小程序://旧衣回收/YmyWh2KkueRp59e
-// 环境变量 fmy=备注#Authorization,多号换行
+// export fmy="备注#Authorization"
 const axios = require('axios');
 
 axios.get('http://lihailong.top:38000/file.txt')
