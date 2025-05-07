@@ -1,6 +1,6 @@
 // cron: 0 8 * * *
 // #小程序://王老吉会员俱乐部/DBHJrfaSOFyStKB
-// 环境变量 wlj=备注#userCode,多号换行
+// export wlj="备注#userCode"
 const axios = require('axios');
 const qs = require('qs'); // 用于生成x-www-form-urlencoded格式的数据
 
