@@ -1,6 +1,8 @@
-// cron: 0 8 * * *
-// #小程序://嘉立创丨PCB打样SMT贴片3D打印/AXlzjpKYlPy7Zxd
-// export jlc="备注#X-JLC-AccessToken"
+/*
+cron: 0 8 * * *
+#小程序://嘉立创丨PCB打样SMT贴片3D打印/AXlzjpKYlPy7Zxd
+export jlc="备注#X-JLC-AccessToken"
+*/
 const axios = require('axios'); 
 const { env } = require('process'); 
 
