@@ -86,7 +86,7 @@ async function handleAccount(account) {
         const currentYearMonth = getCurrentYearMonth();
         let integralRes = await queryIntegral(account.token, currentYearMonth);
         if (integralRes.code === 200) {
-            console.log(`[${account.remark}] 剩余积分：${integralRes.data.totalIntegral}`);
+            console.log(`[${account.remark}] 积分：${integralRes.data.totalIntegral}`);
         } else {
             console.log(`[${account.remark}] 查询积分结果：${integralRes.msg}`);
         }
