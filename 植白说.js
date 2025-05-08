@@ -1,6 +1,8 @@
-// cron: 0 8 * * *
-// #小程序://植白说/dGf794NBCz29wGw
-// export zbs="备注#X-Dts-Token"
+/*
+cron: 0 8 * * *
+#小程序://植白说/dGf794NBCz29wGw
+export zbs="备注#X-Dts-Token"
+*/
 const axios = require('axios');
 
 // 从环境变量中读取token列表，格式为：备注#token，多账号换行
