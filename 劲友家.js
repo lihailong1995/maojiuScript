@@ -1,5 +1,8 @@
-// #小程序://劲友家/r1baJK4jiqTOkJy
-// export jyj="备注#Authorization"
+/*
+cron: 10 6 * * *
+#小程序://劲友家/r1baJK4jiqTOkJy
+export jyj="备注#Authorization"
+*/
 const axios = require('axios');
 
 // 从环境变量获取多个账号信息（格式：备注#Authorization），用换行符分隔
