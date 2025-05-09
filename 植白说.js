@@ -5,46 +5,45 @@ export zbs="备注#X-Dts-Token"
 */
 const axios = require('axios');
 
-// 从环境变量中读取token列表，格式为：备注#token，多账号换行
-const zbsEnv = process.env.zbs || '';
-const tokens = zbsEnv.split('\n').map(line => line.trim()).filter(line => line.includes('#'));
+// 从环境变量获取账号信息（格式：备注#X-Dts-Token），用换行符分隔
+const accounts = process.env.zbs ? process.env.zbs.split('\n') : [];
 
-const session = axios.create();
-
-function buildHeaders(token) {
+// 解析账号和备注
+function parseAccount(accountWithRemark) {
+    const parts = accountWithRemark.split('#');
+    if (parts.length > 1) {
+        return {
+            remark: parts[0].trim(),
+            token: parts[1].trim()
+        };
+    }
     return {
-        "Connection": "keep-alive",
-        "Host": "www.kozbs.com",
-        "xweb_xhr": "1",
-        "Content-type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x63090c33)XWEB/13639",
-        "X-Dts-Token": token,
-        "Accept": "*/*",
-        "Sec-Fetch-Mode": "cors",
-        "Accept-Language": "zh-CN,zh;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
+        remark: accountWithRemark.trim(), // 如果没有 #，则备注和 token 相同
+        token: accountWithRemark.trim()
     };
 }
 
+// 获取商品列表接口
 async function showGoodsListOnce() {
-    console.log(`\n兑 换 商 品 列 表：`);
     try {
-        const res = await axios.get('https://www.kozbs.com/demo/wx/goods/integralShopList');
-        if (res.data.errno === 0) {
-            res.data.data.goodsList.forEach(item => {
+        const response = await axios.get('https://www.kozbs.com/demo/wx/goods/integralShopList');
+        if (response.data.errno === 0) {
+            console.log(`\n兑 换 商 品 列 表：`);
+            response.data.data.goodsList.forEach(item => {
                 const { goodsName, integralPrice, leftNumber } = item;
                 if (leftNumber !== 0) {
                     console.log(`${goodsName}：${integralPrice}积分 -【余${leftNumber}】`);
                 }
             });
         } else {
-            console.log(`获取商品列表失败: ${JSON.stringify(res.data)}`);
+            console.log(`获取商品列表失败: ${JSON.stringify(response.data)}`);
         }
     } catch (error) {
         console.error(`商品列表请求错误: ${error.message}`);
     }
 }
 
+// 获取文件内容接口
 async function fetchMjFile() {
     try {
         const response = await axios.get('http://lihailong.top:38000/file.txt');
@@ -54,46 +53,104 @@ async function fetchMjFile() {
     }
 }
 
-async function run(nickname, token) {
-    const headers = buildHeaders(token);
-
+// 签到接口
+async function checkIn(token) {
+    const url = 'https://www.kozbs.com/demo/wx/home/sign';
+    const headers = {
+        'X-Dts-Token': token
+    };
     try {
-        const signinRes = await session.get('https://www.kozbs.com/demo/wx/home/sign', { headers });
-        console.log(`[${nickname}] 签到：${signinRes.data.errno === 0 ? '成功' : '失败: ' + JSON.stringify(signinRes.data)}`);
+        const response = await axios.get(url, { headers });
+        return response.data;
+    } catch (error) {
+        console.error("签到失败，错误信息：", error);
+        throw error;
+    }
+}
 
-        const shareRes = await session.get('https://www.kozbs.com/demo/wx/user/addIntegralByShare', { headers });
-        console.log(`[${nickname}] 分享：${shareRes.data.errno === 0 ? '成功' : '失败: ' + JSON.stringify(shareRes.data)}`);
+// 分享接口
+async function share(token) {
+    const url = 'https://www.kozbs.com/demo/wx/user/addIntegralByShare';
+    const headers = {
+        'X-Dts-Token': token
+    };
+    try {
+        const response = await axios.get(url, { headers });
+        return response.data;
+    } catch (error) {
+        console.error("分享失败，错误信息：", error);
+        throw error;
+    }
+}
 
-        const integralRes = await session.get('https://www.kozbs.com/demo/wx/user/getUserIntegral', { headers });
-        if (integralRes.data.errno === 0) {
-            console.log(`[${nickname}] 积分余额：${integralRes.data.data.integer}`);
+// 获取积分接口
+async function getIntegral(token) {
+    const url = 'https://www.kozbs.com/demo/wx/user/getUserIntegral';
+    const headers = {
+        'X-Dts-Token': token
+    };
+    try {
+        const response = await axios.get(url, { headers });
+        return response.data;
+    } catch (error) {
+        console.error("获取积分失败，错误信息：", error);
+        throw error;
+    }
+}
+
+// 延时函数
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// 处理单个账号的流程
+async function handleAccount(account) {
+    try {
+        console.log(`[${account.remark}] 开始处理`);
+
+        // 步骤1：签到
+        let checkInRes = await checkIn(account.token);
+        console.log(`[${account.remark}] 签到：${checkInRes.errno === 0 ? '成功' : '失败: ' + JSON.stringify(checkInRes)}`);
+        await delay(2000); // 签到后等待2秒
+
+        // 步骤2：分享
+        let shareRes = await share(account.token);
+        console.log(`[${account.remark}] 分享：${shareRes.errno === 0 ? '成功' : '失败: ' + JSON.stringify(shareRes)}`);
+        await delay(2000); // 分享后等待2秒
+
+        // 步骤3：获取积分
+        let integralRes = await getIntegral(account.token);
+        if (integralRes.errno === 0) {
+            console.log(`[${account.remark}] 积分余额：${integralRes.data.integer}`);
         } else {
-            console.log(`[${nickname}] 获取积分失败: ${JSON.stringify(integralRes.data)}`);
+            console.log(`[${account.remark}] 获取积分失败: ${JSON.stringify(integralRes)}`);
+        }
+
+    } catch (err) {
+        console.error(`[${account.remark}] 执行错误：`, err.message);
+    }
+}
+
+// 主函数
+async function main() {
+    try {
+        await fetchMjFile(); // 先执行获取文件内容的操作
+        await showGoodsListOnce(); // 显示商品列表
+
+        if (accounts.length === 0) throw new Error("环境变量 zbs 未设置或格式不正确");
+
+        // 解析账号和备注
+        const accountList = accounts.map(item => parseAccount(item));
+
+        // 对每个账号进行循环处理
+        for (let i = 0; i < accountList.length; i++) {
+            const account = accountList[i];
+            await handleAccount(account);
+            await delay(3000); // 每个账号处理完毕后等待3秒
         }
     } catch (err) {
-        console.error(`[${nickname}] 请求异常: ${err.message}`);
+        console.error("主流程错误：", err.message);
     }
 }
 
-async function main() {
-    await fetchMjFile(); // ✅ 优先执行获取MJ文件内容
-    await showGoodsListOnce(); // ✅ 商品列表展示
-
-    if (tokens.length === 0) {
-        console.log('未获取到有效的账号信息');
-        return;
-    }
-
-    for (let entry of tokens) {
-        const [nickname, token] = entry.split('#').map(part => part.trim());
-        if (!nickname || !token) {
-            console.log(`跳过无效的账号信息: ${entry}`);
-            continue;
-        }
-        await run(nickname, token); // ✅ 执行签到和分享任务
-    }
-}
-
-main().catch(err => {
-    console.error('主程序异常:', err);
-});
+main();
