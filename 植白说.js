@@ -106,7 +106,7 @@ function delay(ms) {
 // 处理单个账号的流程
 async function handleAccount(account) {
     try {
-        console.log(`[${account.remark}] 开始处理`);
+        //console.log(`[${account.remark}] 开始处理`);
 
         // 步骤1：签到
         let checkInRes = await checkIn(account.token);
