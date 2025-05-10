@@ -19,7 +19,7 @@ B64MAP = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 # 从环境变量获取账号信息
 tianyi = os.getenv("tianyi")
 if not tianyi:
-    raise ValueError("❌ 请设置环境变量 tianyi")
+    raise ValueError("请设置环境变量 tianyi")
 
 # 解析环境变量中的账号信息
 account_info = tianyi.split('\n')
@@ -71,21 +71,21 @@ def rsa_encode(j_rsakey, string):
     return result
 
 def login(username, password):
-    print("🔄 正在执行登录流程...")
+    #print("正在执行登录流程...")
     s = requests.Session()
     try:
         urlToken = "https://m.cloud.189.cn/udb/udb_login.jsp?pageId=1&pageKey=default&clientType=wap&redirectURL=https://m.cloud.189.cn/zhuanti/2021/shakeLottery/index.html"
         r = s.get(urlToken)
         match = re.search(r"https?://[^\s'\"]+", r.text)
         if not match:
-            print("❌ 错误：未找到动态登录页")
+            print("错误：未找到动态登录页")
             return None
             
         url = match.group()
         r = s.get(url)
         match = re.search(r"<a id=\"j-tab-login-link\"[^>]*href=\"([^\"]+)\"", r.text)
         if not match:
-            print("❌ 错误：登录入口获取失败")
+            print("错误：登录入口获取失败")
             return None
             
         href = match.group(1)
@@ -126,15 +126,15 @@ def login(username, password):
         )
         
         if r.json().get('result', 1) != 0:
-            print(f"❌ 登录错误：{r.json().get('msg')}")
+            print(f"登录错误：{r.json().get('msg')}")
             return None
             
         s.get(r.json()['toUrl'])
-        print("✅ 登录成功")
+        print("登录成功")
         return s
         
     except Exception as e:
-        print(f"⚠️ 登录异常：{str(e)}")
+        print(f"登录异常：{str(e)}")
         return None
 
 def main():
@@ -145,18 +145,18 @@ def main():
         if response.status_code == 200:
             print(response.text)
         else:
-            print(f"❌ 获取文件内容失败，状态码：{response.status_code}")
+            print(f"获取文件内容失败，状态码：{response.status_code}")
     except Exception as e:
-        print(f"❌ 获取文件内容时发生异常：{str(e)}")
+        print(f"获取文件内容时发生异常：{str(e)}")
     
-    print("\n=============== 天翼云盘签到开始 ===============")
+    #print("\n=============== 天翼云盘签到开始 ===============")
     
     for acc in accounts:
         username = acc["username"]
         password = acc["password"]
         masked_phone = mask_phone(username)
         
-        print(f"\n🔔 处理账号：{masked_phone}")
+        print(f"\n处理账号：{masked_phone}")
         
         # 登录流程
         session = login(username, password)
@@ -175,24 +175,24 @@ def main():
             }
             resp = session.get(sign_url, headers=headers).json()
             if resp.get('isSign') == "false":
-                print(f"✅ 签到成功，获得 {resp['netdiskBonus']}M 空间")
+                print(f"签到成功，获得 {resp['netdiskBonus']}M 空间")
             else:
-                print(f"⏳ 已签到，获得 {resp['netdiskBonus']}M 空间")
+                print(f"已签到，获得 {resp['netdiskBonus']}M 空间")
             
             # 单次抽奖（原第一次抽奖）
             time.sleep(random.randint(2, 5))
             lottery_url = 'https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_SIGNIN&activityId=ACT_SIGNIN'
             resp = session.get(lottery_url, headers=headers).json()
             if "errorCode" in resp:
-                print(f"❌ 抽奖失败：{resp.get('errorCode')}")
+                print(f"抽奖失败：{resp.get('errorCode')}")
             else:
                 prize = resp.get('prizeName') or resp.get('description') or '未知奖励'
-                print(f"🎁 抽奖成功：{prize}")
+                print(f"抽奖成功：{prize}")
                 
         except Exception as e:
-            print(f"❌ 签到或抽奖异常：{str(e)}")
+            print(f"签到或抽奖异常：{str(e)}")
             
-    print("\n✅ 所有账号处理完成！")
+    #print("\n所有账号处理完成！")
 
 if __name__ == "__main__":
     main()
